@@ -15,12 +15,12 @@ import requests
 from flask import Flask, Response, jsonify, request, send_from_directory
 
 BASE = Path(__file__).parent
-HISTORY = BASE / "history.csv"
+HISTORY = (Path("/tmp") if os.environ.get("VERCEL") else BASE) / "history.csv"
 API = "https://api.apify.com/v2/acts/{actor}/run-sync-get-dataset-items"
 REEL_ACTOR = "apify~instagram-reel-scraper"
 PROFILE_ACTOR = "apify~instagram-profile-scraper"
 
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="public")
 
 
 class ApifyError(Exception):
@@ -171,15 +171,18 @@ def scrape():
 
 
 def _append_history(username, followers, reels, collected):
-    new = not HISTORY.exists()
-    with HISTORY.open("a", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        if new:
-            w.writerow(["collected_on", "username", "followers", "shortcode", "posted",
-                        "duration_s", "views", "likes", "comments", "engagement_rate_pct"])
-        for r in reels:
-            w.writerow([collected, username, followers, r["shortcode"], r["posted"],
-                        r["duration"], r["views"], r["likes"], r["comments"], r["engagement_rate"]])
+    try:
+        new = not HISTORY.exists()
+        with HISTORY.open("a", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            if new:
+                w.writerow(["collected_on", "username", "followers", "shortcode", "posted",
+                            "duration_s", "views", "likes", "comments", "engagement_rate_pct"])
+            for r in reels:
+                w.writerow([collected, username, followers, r["shortcode"], r["posted"],
+                            r["duration"], r["views"], r["likes"], r["comments"], r["engagement_rate"]])
+    except OSError:
+        pass  # read-only or ephemeral disk on some hosts: history is best-effort
 
 
 @app.get("/api/history.csv")
