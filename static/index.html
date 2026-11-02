@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Reel Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070d; --bg2:#0a0f1c; --card:rgba(14,20,36,.72); --card-solid:#0c1220;
+    --line:rgba(120,160,255,.14); --line2:rgba(120,160,255,.28);
+    --text:#eef3ff; --mute:#8a97b8; --dim:#5b6785;
+    --blue:#2f7bff; --blue2:#5aa2ff; --cyan:#37d4ff; --glow:rgba(47,123,255,.35);
+    --good:#3be3a3; --bad:#ff5d73;
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--text);font:15px/1.55 'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(47,123,255,.22), transparent 60%),
+      radial-gradient(700px 420px at 100% 0%, rgba(55,212,255,.10), transparent 55%),
+      var(--bg);
+    background-attachment:fixed;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+
+  /* header */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:34px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 8px 28px var(--glow)}
+  .logo svg{width:20px;height:20px}
+  .pill{font-size:12px;color:var(--mute);border:1px solid var(--line);padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.02)}
+  .pill b{color:var(--blue2);font-weight:600}
+
+  /* hero */
+  .hero{margin-bottom:26px}
+  .hero h1{font-size:clamp(28px,4.6vw,46px);line-height:1.08;letter-spacing:-.035em;margin:0 0 10px;font-weight:800}
+  .grad{background:linear-gradient(90deg,var(--blue2),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--mute);margin:0;max-width:560px}
+
+  /* controls */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 6px}
+  .seg{display:inline-flex;background:var(--card-solid);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .seg button{background:none;border:0;color:var(--mute);font:inherit;font-weight:600;font-size:13px;padding:8px 16px;border-radius:9px;cursor:pointer;transition:.2s}
+  .seg button.on{background:linear-gradient(135deg,var(--blue),#1f5fe0);color:#fff;box-shadow:0 6px 20px var(--glow)}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 22px;cursor:pointer;color:#fff;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));box-shadow:0 10px 30px var(--glow);transition:transform .15s,box-shadow .2s,opacity .2s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 14px 38px var(--glow)}
+  .btn:disabled{opacity:.65;cursor:wait;transform:none}
+  .btn.ghost{background:var(--card-solid);border:1px solid var(--line);box-shadow:none;color:var(--text);font-weight:600}
+  .btn.ghost:hover{border-color:var(--line2)}
+  .key{display:none;background:var(--card-solid);border:1px solid var(--line);color:var(--text);font:inherit;padding:11px 14px;border-radius:12px;min-width:200px}
+  .key:focus{outline:none;border-color:var(--blue)}
+  .spacer{flex:1}
+
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .hide{display:none!important}
+
+  .err{margin-top:18px;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,93,115,.45);background:rgba(255,93,115,.08);color:#ffc2cb}
+
+  /* profile */
+  .profile{display:flex;gap:18px;align-items:center;padding:20px;margin-top:22px;flex-wrap:wrap}
+  .ring{width:76px;height:76px;border-radius:50%;padding:3px;background:linear-gradient(135deg,var(--blue),var(--cyan));flex:none}
+  .ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0a0f1c;border:3px solid var(--bg)}
+  .pname{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .ptag{color:var(--blue2);font-weight:500;font-size:14px}
+  .bio{color:var(--mute);font-size:13px;white-space:pre-line;margin-top:4px;max-width:620px}
+  .pstats{margin-left:auto;display:flex;gap:26px}
+  .pstats div{text-align:center}
+  .pstats b{display:block;font-size:20px;letter-spacing:-.02em}
+  .pstats span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+  .kpi{padding:18px 18px 16px;position:relative;overflow:hidden;transition:.25s}
+  .kpi:hover{border-color:var(--line2);transform:translateY(-2px)}
+  .kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 70%);opacity:.5}
+  .kpi span{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+  .kpi b{display:block;font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:6px}
+  .kpi.hl b{background:linear-gradient(90deg,var(--blue2),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* chart */
+  .chart{padding:20px 20px 14px;margin-top:16px}
+  .ch-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:6px}
+  .ch-h b{font-size:15px}
+  .ch-h span{font-size:12px;color:var(--mute)}
+  .bars{display:flex;align-items:flex-end;gap:10px;height:190px;padding-top:26px;overflow-x:auto;overflow-y:hidden}
+  .col{flex:1;min-width:34px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative;cursor:pointer}
+  .col .b{width:100%;max-width:56px;border-radius:9px 9px 3px 3px;background:linear-gradient(180deg,var(--cyan),var(--blue) 55%,#1646a8);
+    box-shadow:0 0 22px rgba(47,123,255,.25);transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.8,.2,1) both;transition:filter .2s}
+  .col:hover .b{filter:brightness(1.25)}
+  .col .v{font-size:10px;color:var(--mute);margin-bottom:4px;white-space:nowrap}
+  .col .d{font-size:10px;color:var(--dim);margin-top:6px}
+  @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+  /* table */
+  .tbl{margin-top:16px;overflow:hidden}
+  .tscroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:820px}
+  th,td{padding:14px 16px;text-align:right;white-space:nowrap}
+  th{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-weight:600;cursor:pointer;user-select:none;border-bottom:1px solid var(--line);background:rgba(10,15,28,.6)}
+  th:hover{color:var(--text)}
+  th.on{color:var(--blue2)}
+  td{border-bottom:1px solid rgba(120,160,255,.07);font-variant-numeric:tabular-nums}
+  tbody tr{transition:background .15s}
+  tbody tr:hover{background:rgba(47,123,255,.07)}
+  tbody tr:last-child td{border-bottom:0}
+  th:first-child,td:first-child{text-align:left}
+  th.l,td.l{text-align:left}
+  td.cap{white-space:normal;min-width:220px;max-width:340px;color:#c7d2ee;font-size:13px}
+  .best{color:var(--cyan);font-weight:700}
+  .chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:rgba(47,123,255,.14);color:var(--blue2);border:1px solid rgba(47,123,255,.3)}
+  .chip.hi{background:rgba(59,227,163,.12);color:var(--good);border-color:rgba(59,227,163,.3)}
+  a.open{color:#fff;text-decoration:none;font-weight:600;font-size:12px;padding:6px 12px;border-radius:9px;border:1px solid var(--line2);transition:.2s}
+  a.open:hover{background:var(--blue);border-color:var(--blue)}
+  .note{color:var(--dim);font-size:12px;margin:18px 2px 0}
+
+  /* loading */
+  .skel{display:grid;gap:14px;margin-top:22px}
+  .sk{height:96px;border-radius:var(--r);border:1px solid var(--line);
+    background:linear-gradient(100deg,rgba(255,255,255,.02) 30%,rgba(47,123,255,.12) 50%,rgba(255,255,255,.02) 70%);background-size:200% 100%;animation:sh 1.3s linear infinite}
+  .sk.g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;border:0;background:none;animation:none;height:auto}
+  .sk.g i{height:96px;border-radius:var(--r);border:1px solid var(--line);
+    background:linear-gradient(100deg,rgba(255,255,255,.02) 30%,rgba(47,123,255,.12) 50%,rgba(255,255,255,.02) 70%);background-size:200% 100%;animation:sh 1.3s linear infinite}
+  .sk.tall{height:220px}
+  @keyframes sh{to{background-position:-200% 0}}
+  .status{margin-top:18px;color:var(--mute);font-size:13px;display:flex;align-items:center;gap:10px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue);animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35;transform:scale(.7)}}
+
+  .empty{padding:40px 20px;text-align:center;color:var(--mute)}
+
+  @media (max-width:860px){
+    .kpis,.sk.g{grid-template-columns:repeat(2,1fr)}
+    .pstats{margin-left:0;width:100%;justify-content:space-between;gap:10px}
+  }
+  @media (max-width:520px){
+    .wrap{padding:20px 14px 60px}
+    .kpi b{font-size:24px}
+    .btn,.seg{flex:1}
+    .seg button{flex:1;padding:8px 6px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg></div>
+      Reel Tracker
+    </div>
+    <div class="pill">Tracking <b>@jdbocktv</b></div>
+  </header>
+
+  <section class="hero">
+    <h1>Weekly reel performance,<br><span class="grad">in one click.</span></h1>
+    <p>Views, engagement, length and every reel posted in the period, pulled live from the public profile.</p>
+  </section>
+
+  <div class="controls">
+    <div class="seg" id="seg">
+      <button data-d="7" class="on">7 days</button>
+      <button data-d="14">14 days</button>
+      <button data-d="30">30 days</button>
+    </div>
+    <input id="key" class="key" type="password" placeholder="Access password" autocomplete="current-password">
+    <button class="btn" id="go">Extract data</button>
+    <span class="spacer"></span>
+    <button class="btn ghost" id="csv">Download history CSV</button>
+  </div>
+  <input id="url" type="hidden" value="https://www.instagram.com/jdbocktv/">
+
+  <div id="status" class="status hide"><span class="dot"></span><span id="stxt">Fetching reels from Instagram. This takes about a minute.</span></div>
+  <div id="skel" class="skel hide">
+    <div class="sk" style="height:110px"></div>
+    <div class="sk g"><i></i><i></i><i></i><i></i></div>
+    <div class="sk tall"></div>
+  </div>
+  <div id="err" class="err hide"></div>
+
+  <div id="out" class="hide">
+    <div class="card profile">
+      <div class="ring"><img id="avatar" alt="" referrerpolicy="no-referrer"></div>
+      <div>
+        <div class="pname" id="name"></div>
+        <div class="ptag" id="tag"></div>
+        <div class="bio" id="bio"></div>
+      </div>
+      <div class="pstats" id="pstats"></div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="card chart">
+      <div class="ch-h"><b>Views per reel</b><span id="chsub"></span></div>
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="card tbl"><div class="tscroll"><table id="tbl"></table></div></div>
+    <p class="note" id="note"></p>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n == null ? '-' : n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e4 ? (n/1e3).toFixed(1)+'K' : Math.round(n).toLocaleString();
+const pct = n => n == null ? '-' : n + '%';
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let reels = [], sortKey = 'posted', sortDir = -1, days = 7, needKey = false;
+
+const store = { get:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}}, set:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}} };
+
+fetch('/api/config').then(r=>r.json()).then(c=>{
+  needKey = c.protected;
+  if (needKey){ $('key').style.display='block'; $('key').value = store.get('ak') || ''; }
+}).catch(()=>{});
+
+$('seg').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  days = +b.dataset.d;
+  [...$('seg').children].forEach(x=>x.classList.toggle('on', x===b));
+};
+
+const msgs = ['Fetching reels from Instagram. This takes about a minute.','Reading views and engagement...','Crunching the numbers...'];
+let tick;
+function loading(on){
+  $('go').disabled = on; $('go').textContent = on ? 'Extracting...' : 'Extract data';
+  $('skel').classList.toggle('hide', !on); $('status').classList.toggle('hide', !on);
+  clearInterval(tick);
+  if(on){ let i=0; $('stxt').textContent=msgs[0]; tick=setInterval(()=>$('stxt').textContent=msgs[++i%msgs.length],6000); }
+}
+function showErr(m){ $('err').textContent = m; $('err').classList.remove('hide'); $('out').classList.add('hide'); }
+
+$('go').onclick = async () => {
+  $('err').classList.add('hide');
+  if (needKey) store.set('ak', $('key').value);
+  loading(true);
+  try {
+    const res = await fetch('/api/scrape', {method:'POST',
+      headers:{'Content-Type':'application/json','X-Access-Key':$('key').value},
+      body: JSON.stringify({url: $('url').value, days})});
+    const d = await res.json();
+    if (!res.ok) return showErr(d.error || 'Something went wrong.');
+    render(d);
+  } catch (e) { showErr('Could not reach the server. Try again in a moment.'); }
+  finally { loading(false); }
+};
+$('csv').onclick = () => location.href = '/api/history.csv?key=' + encodeURIComponent($('key').value);
+
+function countUp(el, to, f){
+  const t0 = performance.now(), dur = 700;
+  (function s(t){ const p = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-p,3); el.textContent = f(to*e); if(p<1) requestAnimationFrame(s); else el.textContent = f(to); })(t0);
+}
+
+function render(d){
+  const p = d.profile; reels = d.reels;
+  $('avatar').onerror = () => { $('avatar').style.visibility = 'hidden'; };
+  $('avatar').style.visibility = 'visible';
+  $('avatar').src = p.avatar || '';
+  $('name').textContent = p.full_name || '@'+p.username;
+  $('tag').textContent = '@'+p.username + (p.verified ? '  ✓ verified' : '');
+  $('bio').textContent = p.bio || '';
+  $('pstats').innerHTML = [['Followers',fmt(p.followers)],['Following',fmt(p.following)],['Posts',fmt(p.posts)]]
+    .map(([l,v])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
+
+  const sum = k => reels.reduce((a,r)=>a+(r[k]||0),0);
+  const withEng = reels.filter(r=>r.engagement_rate!=null);
+  const avgEng = withEng.length ? withEng.reduce((a,r)=>a+r.engagement_rate,0)/withEng.length : null;
+  const n = reels.length;
+  const best = reels.slice().sort((a,b)=>(b.views||0)-(a.views||0))[0];
+  const k = [
+    ['Reels posted', n, v=>Math.round(v), true],
+    ['Total views', sum('views'), fmt, true],
+    ['Avg views / reel', n ? sum('views')/n : null, fmt],
+    ['Avg engagement', avgEng, v=>v.toFixed(2)+'%'],
+    ['Avg length', n ? reels.reduce((a,r)=>a+r.duration,0)/n : null, v=>Math.round(v)+'s'],
+    ['Total likes', sum('likes'), fmt],
+    ['Total comments', sum('comments'), fmt],
+    ['Top reel views', best ? best.views : null, fmt],
+  ];
+  $('kpis').innerHTML = k.map(([l,v,f,h])=>`<div class="card kpi ${h?'hl':''}"><span>${l}</span><b>-</b></div>`).join('');
+  [...$('kpis').children].forEach((el,i)=>{ const [, v, f] = k[i]; const b = el.querySelector('b'); v==null ? b.textContent='-' : countUp(b, v, f); });
+
+  $('chsub').textContent = n + ' reel' + (n===1?'':'s') + ' in the last ' + d.days + ' days';
+  drawBars(); drawTable();
+  $('note').textContent = 'Engagement = (likes + comments) / followers. Views / followers shows reach relative to audience size. Instagram does not publish reach, impressions or watch time for other accounts. '
+    + (d.cached ? 'Showing cached results from the last hour.' : 'Each extraction is saved to history.csv.');
+  $('out').classList.remove('hide');
+}
+
+function drawBars(){
+  const asc = reels.slice().sort((a,b)=>a.posted.localeCompare(b.posted));
+  if(!asc.length){ $('bars').innerHTML = '<div class="empty" style="width:100%">No reels in this period.</div>'; return; }
+  const max = Math.max(1,...asc.map(r=>r.views||0));
+  $('bars').innerHTML = asc.map((r,i)=>`<div class="col" title="${esc(r.caption)}" onclick="window.open('${r.url}','_blank','noopener')">
+    <div class="v">${fmt(r.views)}</div>
+    <div class="b" style="height:${Math.max(3,(r.views||0)/max*100)}%;animation-delay:${i*40}ms"></div>
+    <div class="d">${new Date(r.posted).toLocaleDateString(undefined,{month:'numeric',day:'numeric'})}</div></div>`).join('');
+}
+
+const cols = [
+  ['posted','Posted',r=>new Date(r.posted).toLocaleDateString(undefined,{month:'short',day:'numeric'})+' <span style="color:var(--dim)">'+new Date(r.posted).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})+'</span>','l'],
+  ['caption','Caption',null,'l'],
+  ['duration','Length',r=>r.duration+'s'],
+  ['views','Views',r=>fmt(r.views)],
+  ['likes','Likes',r=>fmt(r.likes)],
+  ['comments','Comments',r=>fmt(r.comments)],
+  ['engagement_rate','Engagement',r=>r.engagement_rate==null?'-':`<span class="chip ${r.engagement_rate>=3?'hi':''}">${r.engagement_rate}%</span>`],
+  ['view_rate','Views / followers',r=>pct(r.view_rate)],
+];
+
+function drawTable(){
+  const rows = reels.slice().sort((a,b)=>{
+    const x=a[sortKey], y=b[sortKey];
+    return (typeof x==='string' ? x.localeCompare(y) : (x??-1)-(y??-1)) * sortDir;
+  });
+  const maxViews = Math.max(0,...reels.map(r=>r.views||0));
+  $('tbl').innerHTML = '<thead><tr>'+cols.map(([k,l,,c])=>`<th data-k="${k}" class="${c||''} ${k===sortKey?'on':''}">${l}${k===sortKey?(sortDir>0?' ↑':' ↓'):''}</th>`).join('')+'<th></th></tr></thead><tbody>'+
+    (rows.length ? rows.map(r=>'<tr>'+cols.map(([k,,f,c])=>
+      k==='caption' ? `<td class="cap l">${esc(r.caption)||'-'}</td>` :
+      `<td class="${c||''} ${k==='views'&&r.views===maxViews&&maxViews?'best':''}">${f(r)}</td>`).join('')+`<td><a class="open" href="${r.url}" target="_blank" rel="noopener">Open</a></td></tr>`).join('')
+      : `<tr><td colspan="${cols.length+1}" class="empty">No reels found in this period.</td></tr>`)+'</tbody>';
+  $('tbl').querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+    const k = th.dataset.k; sortDir = k===sortKey ? -sortDir : -1; sortKey = k; drawTable();
+  });
+}
+</script>
+</body>
+</html>
